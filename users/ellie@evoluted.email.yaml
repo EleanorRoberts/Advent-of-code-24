@@ -1,0 +1,11 @@
+name: Ellie
+super: true
+id: 1065a4f7-9747-4af2-864f-83bff7deacd7
+password_hash: $2y$10$/ZlZbsMGaV6CXQXGbo7ULuhhO5fvAcnysXArquvwCS1Q/FD3Zrmgy
+preferences:
+  collections:
+    cards:
+      columns:
+        - title
+        - slug
+        - card_type
