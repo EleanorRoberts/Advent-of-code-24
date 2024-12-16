@@ -2,6 +2,7 @@
 $input = file('./public/assets/day_four_input.txt');
 
 echo "Reading file";
+echo "\n";
 
 // XMAS can appear in any direction; horizontally, vertically or diagonally
 // Determine the amount of times XMAS appears in the word search
@@ -30,6 +31,9 @@ $xmasCount = 0;
 
 foreach ($input as $y => $line) {
     $letters = str_split($line);
+    $stripNewLines = array_filter($letters, function ($l) {
+        return $l !== "\n";
+    });
     $letterMap[] = $letters;
 
     foreach ($letters as $x => $letter) {
@@ -49,19 +53,18 @@ foreach ($xLocations as $coordinates) {
         }
 
         $secondCoordinates = getNextCoordinates($firstCoordinates, $direction);
-        $thirdLetterInDirection = getNextLetter($firstCoordinates['x'], $firstCoordinates['y'], $letterMap);
+        $thirdLetterInDirection = getNextLetter($secondCoordinates['x'], $secondCoordinates['y'], $letterMap);
 
         if ($thirdLetterInDirection !== 'A') {
             continue;
         }
 
-        $secondCoordinates = getNextCoordinates($firstCoordinates, $direction);
-        $thirdLetterInDirection = getNextLetter($firstCoordinates['x'], $firstCoordinates['y'], $letterMap);
+        $thirdCoordinates = getNextCoordinates($secondCoordinates, $direction);
+        $thirdLetterInDirection = getNextLetter($thirdCoordinates['x'], $thirdCoordinates['y'], $letterMap);
 
         if ($thirdLetterInDirection === 'S') {
             $xmasCount++;
         }
-
     }
 }
 
@@ -77,12 +80,14 @@ function getNextCoordinates(array $coordinates, $direction): array
 
 function getNextLetter($newX, $newY, $letterMap)
 {
-    if (
-        $newX < 0
-        || $newX > 1000
-        || $newY < 0
-        || $newY > 141
-    ) {
+//    if (
+//        $newX < 0
+//        || $newX >= 140
+//        || $newY < 0
+//        || $newY >= 140
+//    ) {
+//    }
+    if (!isset($letterMap[$newY][$newX])) {
         return null;
     }
 
