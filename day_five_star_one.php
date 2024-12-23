@@ -4,10 +4,10 @@ $input = file('./public/assets/day_five_input.txt');
 echo "Reading file";
 echo "\n";
 
-// Register rules
 $rules = [];
+$updates = [];
 
-// foreach line as input
+// Register rules
 foreach ($input as $line) {
     $isRule = count(explode('|', $line)) === 2;
 
@@ -16,17 +16,18 @@ foreach ($input as $line) {
         $rule = explode('|', $line);
 
         foreach ($rule as $key => $number) {
-            $mustBeBefore = [];
-            $mustBeAfter = [];
-            $existingRule = $rules[$number];
+            $number = trim($number);
 
-            if (!isset($existingRule)) {
+            if (!array_key_exists($number, $rules)) {
+                $mustBeBefore = [];
+                $mustBeAfter = [];
+
                 if ($key === 0) {
-                    $mustBeBefore[] = $rule[1];
+                    $mustBeBefore[] = trim($rule[1]);
                 }
 
                 if ($key === 1) {
-                    $mustBeAfter[] = $rule[0];
+                    $mustBeAfter[] = trim($rule[0]);
                 }
 
                 $rules[$number] = new PageRule($number, $mustBeBefore, $mustBeAfter);
@@ -34,23 +35,36 @@ foreach ($input as $line) {
                 continue;
             }
 
+            $existingRule = $rules[$number];
             // Rule for number already exists, update
             if ($key === 0) {
-                $existingRule->addMustBeBefore($rule[1]);
+                $existingRule->mustBeBefore[] = $rule[1];
             }
 
             if ($key === 1) {
-                $existingRule->addMustBeAfter($rule[0]);
+                $existingRule->mustBeAfter[] = $rule[0];
             }
 
             $rules[$number] = $existingRule;
         }
 
+        continue;
     }
 
-}
-//print_r($rules);
+    if ($line === "\n") {
+        continue;
+    }
 
+    $updates[] = explode(',', $line);
+}
+
+$total = 0;
+foreach ($updates as $update) {
+    $total = addCorrectPageToTotal($total, $update, $rules);
+}
+//$total = addCorrectPageToTotal($total, $updates[4], $rules);
+
+print_r('The total correct updates: ' . $total);
 class PageRule
 {
     public function __construct(
@@ -59,15 +73,63 @@ class PageRule
         public array $mustBeAfter = [],
     ) {
     }
+}
 
-    public function addMustBeBefore($number)
-    {
-        $this->mustBeBefore[] = $number;
+function addCorrectPageToTotal(int $total, array $update, array $rules): int {
+    $correct = true;
+
+    // Check if all numbers follow the rules
+    foreach ($update as $location => $page) {
+        $page = trim($page);
+
+        $hasRules = array_key_exists($page, $rules);
+
+        if (!$hasRules) {
+            print_r($page);
+            print_r($rules);
+            print_r($rules[$page]);
+            exit;
+        }
+
+        if ($hasRules) {
+            // Is this line per rules?
+            $checks = $rules[$page];
+
+            foreach ($checks->mustBeBefore as $before) {
+                $beforeIsInUpdate = in_array($before, $update);
+
+                if ($beforeIsInUpdate) {
+                    $beforeLocation = array_search($before, $update);
+
+                    if ($beforeLocation < $location) {
+//                        print_r("Before line incorrect: $before $page" ." \n");
+                        $correct = false;
+                    }
+                }
+            }
+
+            foreach ($checks->mustBeAfter as $after) {
+                $afterIsInUpdate = in_array($after, $update);
+
+                if ($afterIsInUpdate) {
+                    $afterLocation = array_search($after, $update);
+
+                    if ($afterLocation > $location) {
+//                        print_r("After check incorrect: $after $page" . "\n");
+                        $correct = false;
+                    }
+                }
+            }
+        }
     }
 
-    public function addMustBeAfter($number)
-    {
-        $this->mustBeAfter[] = $number;
+    $middle = $update[floor(count($update) / 2)];
+
+    // If yes, get the middle number
+    if ($correct){
+        return $total + $middle;
     }
+
+    return $total;
 }
 
