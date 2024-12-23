@@ -62,7 +62,6 @@ $total = 0;
 foreach ($updates as $update) {
     $total = addCorrectPageToTotal($total, $update, $rules);
 }
-//$total = addCorrectPageToTotal($total, $updates[4], $rules);
 
 print_r('The total correct updates: ' . $total);
 class PageRule
@@ -81,15 +80,7 @@ function addCorrectPageToTotal(int $total, array $update, array $rules): int {
     // Check if all numbers follow the rules
     foreach ($update as $location => $page) {
         $page = trim($page);
-
         $hasRules = array_key_exists($page, $rules);
-
-        if (!$hasRules) {
-            print_r($page);
-            print_r($rules);
-            print_r($rules[$page]);
-            exit;
-        }
 
         if ($hasRules) {
             // Is this line per rules?
@@ -102,7 +93,6 @@ function addCorrectPageToTotal(int $total, array $update, array $rules): int {
                     $beforeLocation = array_search($before, $update);
 
                     if ($beforeLocation < $location) {
-//                        print_r("Before line incorrect: $before $page" ." \n");
                         $correct = false;
                     }
                 }
@@ -115,7 +105,6 @@ function addCorrectPageToTotal(int $total, array $update, array $rules): int {
                     $afterLocation = array_search($after, $update);
 
                     if ($afterLocation > $location) {
-//                        print_r("After check incorrect: $after $page" . "\n");
                         $correct = false;
                     }
                 }
